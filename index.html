@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Mahasiswa</title>
+
+    <style>
+        body {
+            background-color: goldenrod;
+            margin: 20px;
+            font-family: Arial;
+        }
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .form-table td {
+            border: none;
+        }
+        #btnHapusSemua {
+            background: red;
+            color: white;
+            padding: 7px 15px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #btnHapusSemua:hover {
+            background: darkred;
+        }
+        .btn-hapus {
+            background: crimson;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-hapus:hover {
+            background: darkred;
+        }
+    </style>
+</head>
+<body>
+
+<h1>FORMULIR MAHASISWA</h1>
+
+<!-- FORM -->
+<table class="form-table">
+    <tr>
+        <td>Nama</td>
+        <td><input type="text" id="nama"></td>
+    </tr>
+
+    <tr>
+        <td>Alamat</td>
+        <td><input type="text" id="alamat"></td>
+    </tr>
+
+    <tr>
+        <td>NIM</td>
+        <td><input type="number" id="nim"></td>
+    </tr>
+
+    <tr>
+        <td>Jenis Kelamin</td>
+        <td>
+            <input type="radio" name="jk" value="Laki-Laki"> Laki-Laki
+            <input type="radio" name="jk" value="Perempuan"> Perempuan
+        </td>
+    </tr>
+
+    <tr>
+        <td>Hobi</td>
+        <td>
+            <input type="checkbox" name="hobi" value="Bola"> Bola
+            <input type="checkbox" name="hobi" value="Game"> Game
+        </td>
+    </tr>
+
+    <tr>
+        <td>Jurusan</td>
+        <td>
+            <select id="jurusan">
+                <option>Matematika</option>
+                <option>Biologi</option>
+            </select>
+        </td>
+    </tr>
+
+    <tr>
+        <td>Deskripsi</td>
+        <td><textarea id="deskripsi"></textarea></td>
+    </tr>
+
+    <tr>
+        <td></td>
+        <td>
+            <button onclick="simpan()">Simpan</button>
+            <button onclick="resetForm()">Reset</button>
+        </td>
+    </tr>
+</table>
+
+<!-- Tombol hapus semua -->
+<div style="text-align:center;">
+    <button id="btnHapusSemua" onclick="hapusSemuaData()">Hapus Semua Data</button>
+</div>
+
+<!-- TABEL DATA -->
+<h2>Data Mahasiswa</h2>
+<table id="tabelData">
+    <thead>
+        <tr>
+            <th>Nama</th>
+            <th>Alamat</th>
+            <th>NIM</th>
+            <th>Jenis Kelamin</th>
+            <th>Hobi</th>
+            <th>Jurusan</th>
+            <th>Deskripsi</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    // Load data saat halaman dibuka
+    window.onload = function() {
+        tampilkanData();
+    };
+
+    function simpan() {
+        let nama = document.getElementById("nama").value;
+        let alamat = document.getElementById("alamat").value;
+        let nim = document.getElementById("nim").value;
+        let jk = document.querySelector("input[name='jk']:checked")?.value || "";
+        let hobi = [...document.querySelectorAll("input[name='hobi']:checked")].map(h => h.value).join(", ");
+        let jurusan = document.getElementById("jurusan").value;
+        let deskripsi = document.getElementById("deskripsi").value;
+
+        if (!nama || !nim) {
+            alert("Nama dan NIM wajib diisi!");
+            return;
+        }
+
+        let data = JSON.parse(localStorage.getItem("mahasiswa")) || [];
+
+        data.push({ nama, alamat, nim, jk, hobi, jurusan, deskripsi });
+
+        localStorage.setItem("mahasiswa", JSON.stringify(data));
+
+        tampilkanData();
+        resetForm();
+    }
+
+    function tampilkanData() {
+        let tbody = document.querySelector("#tabelData tbody");
+        tbody.innerHTML = "";
+
+        let data = JSON.parse(localStorage.getItem("mahasiswa")) || [];
+
+        data.forEach((m, index) => {
+            let tr = `<tr>
+                        <td>${m.nama}</td>
+                        <td>${m.alamat}</td>
+                        <td>${m.nim}</td>
+                        <td>${m.jk}</td>
+                        <td>${m.hobi}</td>
+                        <td>${m.jurusan}</td>
+                        <td>${m.deskripsi}</td>
+                        <td>
+                            <button class="btn-hapus" onclick="hapusData(${index})">Hapus</button>
+                        </td>
+                      </tr>`;
+            tbody.innerHTML += tr;
+        });
+    }
+
+    function resetForm() {
+        document.getElementById("nama").value = "";
+        document.getElementById("alamat").value = "";
+        document.getElementById("nim").value = "";
+        document.getElementById("deskripsi").value = "";
+        document.querySelectorAll("input[name='jk']").forEach(i => i.checked = false);
+        document.querySelectorAll("input[name='hobi']").forEach(i => i.checked = false);
+    }
+
+    // 🔥 Hapus 1 baris berdasarkan index
+    function hapusData(i) {
+        let data = JSON.parse(localStorage.getItem("mahasiswa")) || [];
+
+        if (confirm("Yakin ingin menghapus data ini?")) {
+            data.splice(i, 1); // hapus data ke-i
+            localStorage.setItem("mahasiswa", JSON.stringify(data));
+            tampilkanData();
+        }
+    }
+
+    // 🔥 Hapus semua data
+    function hapusSemuaData() {
+        let konfirmasi = confirm("Yakin ingin menghapus semua data?");
+
+        if (konfirmasi) {
+            localStorage.removeItem("mahasiswa");
+            tampilkanData();
+            alert("Semua data berhasil dihapus!");
+        }
+    }
+</script>
+
+</body>
+</html>
